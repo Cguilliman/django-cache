@@ -1,0 +1,21 @@
+[run]
+source = django_cache
+branch = 1
+
+[report]
+omit =
+    django_cache/migrations/*
+    django_cache/tests/*
+    django_cache/*/__init__.py
+    django_cache/apps.py
+    example_apps/*
+    .venv/*
+    env/*
+    setup.py
+include = django_cache/*
+ignore_errors = True
+exclude_lines =
+    if self.debug:
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:
