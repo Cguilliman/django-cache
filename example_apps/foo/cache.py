@@ -30,7 +30,7 @@ fast_foo_cache = CacheWorker(
     label="fast_foo_cache",
     timeout=10,
     relevance_timeout=1,
-    lazy_invalidation=True
+    relevance_invalidation=True
 )
 fast_foo_timeout_cache = CacheWorker(
     structure_getter=get_foo,

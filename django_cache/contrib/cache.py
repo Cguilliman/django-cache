@@ -23,8 +23,6 @@ class CacheWorker:
         cached_entity: bool = False,
         tick_amount: int = default.DEFAULT_TICK_AMOUNT,
         tick: float = default.DEFAULT_TICK_SIZE,
-        lazy_invalidation: bool = default.DEFAULT_LAZY_INVALIDATION,
-        delay_lazy_invalidation: bool = default.DEFAULT_DELAY_LAZY_INVALIDATION,
         delay_invalidation: bool = default.DEFAULT_DELAY_INVALIDATION,
         relevance_invalidation: bool = default.DEFAULT_RELEVANCE_INVALIDATION,
         relevance_timeout: int = default.DEFAULT_RELEVANCE_TIMEOUT,
@@ -41,8 +39,7 @@ class CacheWorker:
         self.tick_amount = tick_amount
         self.tick = tick
         # Lazy invalidation
-        self.lazy_invalidation = lazy_invalidation
-        self.delay_lazy_invalidation = delay_lazy_invalidation  # Not used
+        # self.lazy_invalidation = lazy_invalidation
         # Logging
         self.delay_logging = delay_logging
         # Invalidation by timeout
@@ -91,14 +88,13 @@ class CacheWorker:
             return
         entity = CachedEntity(**value_data)
         # Check by relevance and do invalidation if need it
-        if self.lazy_invalidation and entity.relevance_to <= datetime.now():
+        if self.relevance_invalidation and entity.relevance_to <= datetime.now():
             from ..tasks import lazy_invalidation_task
-            # Run delay invalidation process
-            if self.delay_invalidation:
-                # Will run invalidation in delay, and return old cached value
-                lazy_invalidation_task.delay(key)
-            else:
+            if not self.delay_invalidation:
                 return lazy_invalidation_task(key)
+            # Will run invalidation in delay, and return old cached value
+            lazy_invalidation_task.delay(key)
+
         return entity if self.cached_entity else entity.value
 
     def cache_ticks_getter(self, key) -> Iterator[Any]:

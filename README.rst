@@ -75,9 +75,7 @@ Worker parameters
 * ``cached_entity`` - [Not required][bool] Default False. Will return CacheEntity as cache value.
 * ``tick_amount`` - [Not required][int] Default 10. Count of ticks while concurrent getting cache value.
 * ``tick`` - [Not required][float/int] Default 0,1. Tick size in seconds.
-* ``lazy_invalidation`` - [Not required][bool] Default False. Enable lazy invalidation not relevant cache value.
-* ``delay_invalidation`` - [Not required][bool] Default False. Run lazy invalidation in delay celery task.
-* ``relevance_invalidation`` - [Not required][bool] Default False. Invalidate cache value by relevance.
+* ``relevance_invalidation`` - [Not required][bool] Default False. Enable invalidation by relevance.
 * ``relevance_timeout`` - [Not required][int] Default 60. Cache value relevance time in seconds.
 * ``delay_logging`` - [Not required][bool] Default False. Run CreatedCache object creation in delay celery task.
 
