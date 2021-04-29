@@ -13,33 +13,33 @@ from .models import Foo, Bar
 simple_foo = CacheWorker(
     structure_getter=get_foo,
     label='simple_foo',
-    timeout=20,
+    expires=20,
 )
 workers_collection.register(
     structure_getter=get_bar,
     label="simple_bar",
-    timeout=20,
+    expires=20,
 )
 simple_bar = get_cache_worker("simple_bar")
 
 fast_foo_cache = CacheWorker(
     structure_getter=get_foo,
     label="fast_foo_cache",
-    timeout=10,
-    relevance_timeout=1,
+    expires=10,
+    relevance_expires=1,
     relevance_invalidation=True
 )
 fast_foo_timeout_cache = CacheWorker(
     structure_getter=get_foo,
     label="fast_foo_cache",
-    timeout=10,
+    expires=10,
     relevance_invalidation=True,
-    relevance_timeout=1,
+    relevance_expires=1,
 )
 nested_foo_cache = CacheWorker(
     structure_getter=get_foo_with_nested,
     label="nested_foo_cache",
-    timeout=10,
+    expires=10,
 )
 
 

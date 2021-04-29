@@ -18,14 +18,14 @@ class CacheWorker:
         self,
         structure_getter: Callable[..., Any],
         label: str,
-        timeout: int = default.DEFAULT_TIMEOUT,
+        expires: int = default.DEFAULT_EXPIRES,
         key_gen: Union[str, Callable[..., str]] = default.DEFAULT_KEYGEN,
         cached_entity: bool = False,
         tick_amount: int = default.DEFAULT_TICK_AMOUNT,
         tick: float = default.DEFAULT_TICK_SIZE,
         delay_invalidation: bool = default.DEFAULT_DELAY_INVALIDATION,
         relevance_invalidation: bool = default.DEFAULT_RELEVANCE_INVALIDATION,
-        relevance_timeout: int = default.DEFAULT_RELEVANCE_TIMEOUT,
+        relevance_expires: int = default.DEFAULT_RELEVANCE_EXPIRES,
         delay_countdown: int = default.DEFAULT_DELAY_COUNTDOWN,
         delay_logging: bool = default.DEFAULT_DELAY_LOGGING,
         is_register: bool = True
@@ -34,16 +34,16 @@ class CacheWorker:
         self.label = label
         self.key_gen = key_gen
         self.structure_getter = structure_getter
-        self.timeout = timeout
+        self.expires = expires
         self.cached_entity = cached_entity
         # Ticks configure
         self.tick_amount = tick_amount
         self.tick = tick
         # Logging
         self.delay_logging = delay_logging
-        # Invalidation by timeout
+        # Invalidation by expires time
         self.relevance_invalidation = relevance_invalidation
-        self.relevance_timeout = relevance_timeout
+        self.relevance_expires = relevance_expires
         self.delay_invalidation = delay_invalidation
         self.delay_countdown = delay_countdown
         if is_register:
@@ -69,11 +69,11 @@ class CacheWorker:
             value=self.structure_getter(*args, **kwargs),
             key=key_,
             label=self.label,
-            timeout=self.timeout,
+            expires=self.expires,
             is_relevance_invalidation=self.relevance_invalidation,
             created_at=datetime.now(),
-            available_to=datetime.now() + timedelta(seconds=self.timeout),
-            relevance_to=datetime.now() + timedelta(seconds=self.relevance_timeout)
+            available_to=datetime.now() + timedelta(seconds=self.expires),
+            relevance_to=datetime.now() + timedelta(seconds=self.relevance_expires)
         )
         cache_value(
             cache_entity=entity,

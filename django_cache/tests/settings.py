@@ -88,6 +88,6 @@ CELERY_BROKER_URL = 'memory://'
 DJANGO_CACHE_WORKERS = {
     "all_foos": {
         "structure_getter": "example_apps.foo.getters.get_all_foo",
-        "timeout": 10,
+        "expires": 10,
     },
 }

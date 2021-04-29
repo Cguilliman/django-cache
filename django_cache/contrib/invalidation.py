@@ -89,7 +89,7 @@ def invalidate_all_process(cache_worker):
         invalidate_created_caches(cached_object, cache_worker)
 
 
-def invalidate_by_relevance_timeout():
+def invalidate_by_relevance_expires():
     to_invalidation = CreatedCache.objects.filter(
         is_relevance_invalidation=True,
         relevance_to__lte=datetime.now()

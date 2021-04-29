@@ -4,14 +4,13 @@ from django.utils.module_loading import import_string
 
 from .cache import CacheWorker
 from . import settings as default
-from .settings import DEFAULT_KEYGEN, DEFAULT_TICK_AMOUNT, DEFAULT_TICK_SIZE, DEFAULT_TIMEOUT
 
 
 _CREATION_FIELDS = (
-    "structure_getter", "timeout",
+    "structure_getter", "expires",
     "key_gen", "tick_amount", "tick", "cached_entity",
     "delay_invalidation", "relevance_invalidation",
-    "relevance_timeout", "delay_countdown", "delay_logging",
+    "relevance_expires", "delay_countdown", "delay_logging",
 )
 
 
@@ -30,14 +29,14 @@ class WorkersCollection:
         self,
         structure_getter: Union[str, Callable[..., Any]],
         label: str,
-        timeout: int = default.DEFAULT_TIMEOUT,
+        expires: int = default.DEFAULT_EXPIRES,
         key_gen: Union[str, Callable[..., str]] = default.DEFAULT_KEYGEN,
         cached_entity: bool = False,
         tick_amount: int = default.DEFAULT_TICK_AMOUNT,
         tick: float = default.DEFAULT_TICK_SIZE,
         delay_invalidation: bool = default.DEFAULT_DELAY_INVALIDATION,
         relevance_invalidation: bool = default.DEFAULT_RELEVANCE_INVALIDATION,
-        relevance_timeout: int = default.DEFAULT_RELEVANCE_TIMEOUT,
+        relevance_expires: int = default.DEFAULT_RELEVANCE_EXPIRES,
         delay_countdown: int = default.DEFAULT_DELAY_COUNTDOWN,
         delay_logging: bool = default.DEFAULT_DELAY_LOGGING,
     ):
@@ -54,14 +53,14 @@ class WorkersCollection:
         worker = CacheWorker(
             structure_getter=structure_getter,
             label=label,
-            timeout=timeout,
+            expires=expires,
             key_gen=key_gen,
             cached_entity=cached_entity,
             tick_amount=tick_amount,
             tick=tick,
             delay_invalidation=delay_invalidation,
             relevance_invalidation=relevance_invalidation,
-            relevance_timeout=relevance_timeout,
+            relevance_expires=relevance_expires,
             delay_countdown=delay_countdown,
             delay_logging=delay_logging,
             # To get around circle import exception

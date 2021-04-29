@@ -39,7 +39,7 @@ Initialize worker:
     all_foos_cache = CacheWorker(
         label="all_foos",  # Unique cache worker label
         structure_getter=get_all_foo_list,  # Function which generate cache value
-        timeout=100000,  # Cache live in seconds
+        expires=100000,  # Cache live in seconds
         delay_invalidation=True
     )
 
@@ -47,14 +47,16 @@ or in settings:
 
 .. code:: python
 
-    DJANGO_CACHE_WORKERS = [
-        {
-            "label": "all_foos",
+    DJANGO_CACHE_WORKERS = {
+        "all_foos": {
+            "label": "",
             "structure_getter": "my_application.get_all_foo_list",
-            "timeout": 100000,
+            "expires": 100000,
             "delay_invalidation": True,
         }
-    ]
+    }
+
+**NOTE**: Be careful with circle import while using settings declaration.
 
 Use caching value in your code:
 
@@ -72,14 +74,26 @@ Worker parameters
 
 * ``structure_getter`` - [Callable[..., Any]] Function or something callable which create cache value, must receive serializable arguments, which can be converted in string presentation.
 * ``label`` - [str] Unique caching worker label.
-* ``timeout`` - [int] Cache key live time.
+* ``expires`` - [int] Cache key live time.
 * ``key_gen`` - [Not required] Function which generate key by getting arguments.
 * ``cached_entity`` - [Not required][bool] Default False. Will return CacheEntity as cache value.
 * ``tick_amount`` - [Not required][int] Default 10. Count of ticks while concurrent getting cache value.
 * ``tick`` - [Not required][float/int] Default 0,1. Tick size in seconds.
 * ``relevance_invalidation`` - [Not required][bool] Default False. Enable invalidation by relevance.
-* ``relevance_timeout`` - [Not required][int] Default 60. Cache value relevance time in seconds.
+* ``relevance_expires`` - [Not required][int] Default 60. Cache value relevance time in seconds.
 * ``delay_logging`` - [Not required][bool] Default False. Run CreatedCache object creation in delay celery task.
+
+You can change global default value in settings:
+
+* ``DJANGO_CACHE_DEFAULT_TICK_AMOUNT``
+* ``DJANGO_CACHE_DEFAULT_TICK_SIZE``
+* ``DJANGO_CACHE_DEFAULT_KEYGEN``
+* ``DJANGO_CACHE_DEFAULT_EXPIRES``
+* ``DJANGO_CACHE_DEFAULT_DELAY_INVALIDATION``
+* ``DJANGO_CACHE_DEFAULT_RELEVANCE_INVALIDATION``
+* ``DJANGO_CACHE_DEFAULT_RELEVANCE_EXPIRES``
+* ``DJANGO_CACHE_DEFAULT_DELAY_COUNTDOWN``
+* ``DJANGO_CACHE_DEFAULT_DELAY_LOGGING``
 
 Automatic invalidation
 ----------------------
@@ -122,7 +136,7 @@ Configure invalidation:
     all_foos_cache = Cacher(
         label="all_foos",  # Unique cache worker label
         structure_getter=get_all_foo_list,  # Function which generation cache value
-        timeout=100000,  # Cache live in seconds
+        expires=100000,  # Cache live in seconds
         delay_invalidation=True
     )
 
@@ -135,7 +149,7 @@ Configure invalidation:
     filtered_foos = Cacher(
         label="filtered_foos",  # Unique cache worker label
         structure_getter=filter_foos,  # Function which generation cache value
-        timeout=100000,  # Cache live in seconds
+        expires=100000,  # Cache live in seconds
         delay_invalidation=True
     )
 
