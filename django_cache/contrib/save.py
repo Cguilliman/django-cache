@@ -40,7 +40,16 @@ def serialize_attributes(*args, **kwargs):
     return {
         "args": args,
         "kwargs": kwargs,
-        "filterable_kwargs": {key: [value] for key, value in kwargs.items() if value is not None}
+        # TODO: Add types validation
+        "filterable_kwargs": {
+            key: (
+                value
+                if isinstance(value, (list, tuple))
+                else [value]
+            )
+            for key, value in kwargs.items()
+            if value is not None
+        }
     }
 
 

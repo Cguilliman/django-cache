@@ -9,7 +9,10 @@ from django_cache.models import CreatedCache
 from django_cache.tasks import run_invalidate_task, relevance_invalidation_task
 
 from example_apps.foo.models import Foo, Bar
-from example_apps.foo.cache import simple_foo, simple_bar, fast_foo_cache, fast_foo_timeout_cache
+from example_apps.foo.cache import (
+    simple_foo, simple_bar, fast_foo_cache, fast_foo_timeout_cache,
+    nested_foo_cache
+)
 
 
 class GeneralTestCase(TestCase):
@@ -176,3 +179,24 @@ class GeneralTestCase(TestCase):
         relevance_invalidation_task()
         self.assertIn(foo2, cache.get(key).get("value"))
         cache.clear()
+
+    def test_nested_cache(self):
+        kwargs = dict(attr1=1, attr2="test", attr3=1.1)
+        foo1 = Foo.objects.create(**kwargs)
+        foo2 = Foo.objects.create(**kwargs)
+        bar1 = Bar.objects.create(foo=foo1, **kwargs)
+        bar2 = Bar.objects.create(foo=foo1, **kwargs)
+        self.assertIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
+        self.assertIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar1.id]))
+        bar2.foo = foo2
+        bar2.save()
+        self.assertNotIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar2.id]))
+        self.assertIn(foo2, nested_foo_cache.get(attr1=1, bars=[bar2.id]))
+        self.assertIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
+        self.assertIn(foo2, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
+        bar2.foo = foo1
+        bar2.save()
+        self.assertIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar2.id]))
+        self.assertNotIn(foo2, nested_foo_cache.get(attr1=1, bars=[bar2.id]))
+        self.assertIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
+        self.assertNotIn(foo2, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
