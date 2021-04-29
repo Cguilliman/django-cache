@@ -1,4 +1,4 @@
-from typing import *
+from typing import Dict, Any
 
 from .contrib import workers_collection, CacheWorker, invalidate, invalidate_all
 

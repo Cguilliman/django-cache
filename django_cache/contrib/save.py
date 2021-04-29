@@ -1,4 +1,4 @@
-from typing import *
+from typing import NamedTuple, Any
 from datetime import datetime
 
 from django.core.cache import cache

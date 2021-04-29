@@ -3,7 +3,10 @@ import time
 from django.test import TestCase
 from django.core.cache import cache
 
-from django_cache.shortcuts import *
+from django_cache.shortcuts import (
+    get_cache_worker, get_cache, save_cache,
+    invalidate_cache, invalidate_all_cache
+)
 from django_cache.contrib.invalidation import invalidate, INVALIDATE, INVALIDATE_ALL
 from django_cache.models import CreatedCache
 from django_cache.tasks import run_invalidate_task, relevance_invalidation_task

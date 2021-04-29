@@ -1,4 +1,3 @@
-from typing import *
 import itertools
 from functools import reduce
 from operator import and_, or_

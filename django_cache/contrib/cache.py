@@ -1,4 +1,4 @@
-from typing import *
+from typing import Callable, Union, Any, Generator
 import time
 from datetime import datetime, timedelta
 
@@ -97,7 +97,7 @@ class CacheWorker:
 
         return entity if self.cached_entity else entity.value
 
-    def cache_ticks_getter(self, key) -> Iterator[Any]:
+    def cache_ticks_getter(self, key) -> Generator:
         # Try to get cache
         yield self._get(key)
         # Get precached marker

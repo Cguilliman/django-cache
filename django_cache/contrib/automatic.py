@@ -1,4 +1,6 @@
-from typing import *
+from typing import (
+    Optional, Callable, Iterable, Union, Tuple, Dict, List, Type
+)
 from dataclasses import dataclass
 from collections import defaultdict
 from functools import partial
