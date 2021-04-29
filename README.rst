@@ -1,7 +1,7 @@
 Django-cache
 ============
 
-|PyPI version| |python version| |license| |Code Health| |Coverage| |Project Status|
+|PyPI version| |python version| |license| |Code Health| |Coverage| |Project Status| |downloads|
 
 **Django-cache** implement configurable caching mechanics.
 
@@ -192,4 +192,6 @@ NOTES
    :alt: Code coverage
 .. |Project Status| image:: https://img.shields.io/pypi/status/django-ib-cache.svg
    :target: https://pypi.org/project/django-ib-cache/
+   :alt: Project Status
+.. |downloads| image:: https://img.shields.io/pypi/dm/django-ib-cache.svg
    :alt: Project Status
