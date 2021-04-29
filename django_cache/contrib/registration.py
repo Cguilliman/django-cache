@@ -8,17 +8,23 @@ from .settings import DEFAULT_KEYGEN, DEFAULT_TICK_AMOUNT, DEFAULT_TICK_SIZE, DE
 
 
 _CREATION_FIELDS = (
-    "structure_getter", "label", "timeout",
-    "key_gen", "tick_amount", "tick",
+    "structure_getter", "timeout",
+    "key_gen", "tick_amount", "tick", "cached_entity",
+    "delay_invalidation", "relevance_invalidation",
+    "relevance_timeout", "delay_countdown", "delay_logging",
 )
 
 
 class WorkersCollection:
     workers = {}
 
-    def __init__(self, workers_settings: List):
-        for worker in workers_settings:
-            self.register(**{key: worker.get(key) for key in _CREATION_FIELDS})
+    def __init__(self, workers_settings: Dict):
+        for label, worker in workers_settings.items():
+            self.register(label=label, **{
+                key: worker.get(key)
+                for key in _CREATION_FIELDS
+                if worker.get(key) is not None
+            })
 
     def register(
         self,
@@ -45,7 +51,7 @@ class WorkersCollection:
             if isinstance(key_gen, str)
             else key_gen
         )
-        self.register_worker(label, CacheWorker(
+        worker = CacheWorker(
             structure_getter=structure_getter,
             label=label,
             timeout=timeout,
@@ -58,7 +64,10 @@ class WorkersCollection:
             relevance_timeout=relevance_timeout,
             delay_countdown=delay_countdown,
             delay_logging=delay_logging,
-        ))
+            # To get around circle import exception
+            is_register=False
+        )
+        self.register_worker(label, worker)
 
     def register_worker(self, label: str, worker: CacheWorker):
         self.workers[label] = worker
@@ -68,5 +77,5 @@ class WorkersCollection:
 
 
 workers_collection = WorkersCollection(
-    getattr(settings, "DJANGO_CACHE_WORKERS", [])
+    getattr(settings, "DJANGO_CACHE_WORKERS", {})
 )

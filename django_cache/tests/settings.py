@@ -83,3 +83,11 @@ ROOT_URLCONF = 'example_apps.urls'
 # BROKER_BACKEND = 'memory'
 CELERY_BROKER_URL = 'memory://'
 # CELERY_BROKER_URL = 'amqp://guest:guest@rabbit:5672/%2F'
+
+
+DJANGO_CACHE_WORKERS = {
+    "all_foos": {
+        "structure_getter": "example_apps.foo.getters.get_all_foo",
+        "timeout": 10,
+    },
+}

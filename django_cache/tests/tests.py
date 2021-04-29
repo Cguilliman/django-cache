@@ -200,3 +200,13 @@ class GeneralTestCase(TestCase):
         self.assertNotIn(foo2, nested_foo_cache.get(attr1=1, bars=[bar2.id]))
         self.assertIn(foo1, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
         self.assertNotIn(foo2, nested_foo_cache.get(attr1=1, bars=[bar1.id, bar2.id]))
+        cache.clear()
+
+    def test_empty_attributes_cache(self):
+        kwargs = dict(attr1=1, attr2="test", attr3=1.1)
+        foo1 = Foo.objects.create(**kwargs)
+        # Registered in settings
+        self.assertIn(foo1, get_cache("all_foos"))
+        foo2 = Foo.objects.create(**kwargs)
+        self.assertIn(foo2, get_cache("all_foos"))
+        cache.clear()

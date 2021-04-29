@@ -28,6 +28,7 @@ class CacheWorker:
         relevance_timeout: int = default.DEFAULT_RELEVANCE_TIMEOUT,
         delay_countdown: int = default.DEFAULT_DELAY_COUNTDOWN,
         delay_logging: bool = default.DEFAULT_DELAY_LOGGING,
+        is_register: bool = True
     ):
         # General
         self.label = label
@@ -38,8 +39,6 @@ class CacheWorker:
         # Ticks configure
         self.tick_amount = tick_amount
         self.tick = tick
-        # Lazy invalidation
-        # self.lazy_invalidation = lazy_invalidation
         # Logging
         self.delay_logging = delay_logging
         # Invalidation by timeout
@@ -47,7 +46,8 @@ class CacheWorker:
         self.relevance_timeout = relevance_timeout
         self.delay_invalidation = delay_invalidation
         self.delay_countdown = delay_countdown
-        self.__register()
+        if is_register:
+            self.__register()
 
     def __register(self):
         from .registration import workers_collection
