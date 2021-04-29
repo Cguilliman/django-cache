@@ -1,6 +1,8 @@
 Django-cache
 ============
 
+|PyPI version| |python version| |license| |Code Health| |Coverage| |Project Status|
+
 **Django-cache** implement configurable caching mechanics.
 
 Minimal start
@@ -175,3 +177,19 @@ NOTES
 * If you are using delay invalidation with celery, be careful with cache backend. Memcache has two different instances in celery and django, so using redis or rabbitmq backends.
 
 * If you initialize cache worker using ``django_cache.contrib.Cacher``, this module must me received by application.
+
+.. |PyPI version| image:: https://badge.fury.io/py/django-ib-cache.svg
+   :target: https://badge.fury.io/py/django-ib-cache
+.. |python version| image:: https://img.shields.io/pypi/pyversions/django-ib-cache
+   :target: https://pypi.org/project/django-ib-cache
+.. |license| image:: https://img.shields.io/pypi/l/django-ib-cache.svg
+   :alt: Software license
+   :target: https://github.com/Cguilliman/django-cache/blob/master/LICENSE
+.. |Code Health| image:: https://app.codacy.com/project/badge/Grade/c407b57a01ed4b4eac16bc91620d403b
+   :target: https://www.codacy.com/gh/Cguilliman/django-cache
+.. |Coverage| image:: https://app.codacy.com/project/badge/Coverage/c407b57a01ed4b4eac16bc91620d403b
+   :target: https://www.codacy.com/gh/Cguilliman/django-cache/dashboard
+   :alt: Code coverage
+.. |Project Status| image:: https://img.shields.io/pypi/status/django-ib-cache.svg
+   :target: https://pypi.org/project/django-ib-cache/
+   :alt: Project Status
