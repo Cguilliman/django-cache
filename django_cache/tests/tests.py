@@ -209,7 +209,7 @@ class GeneralTestCase(TestCase):
         kwargs = dict(attr1=1, attr2="test", attr3=1.1)
         foo1 = Foo.objects.create(**kwargs)
         # Registered in settings
-        self.assertIn(foo1, get_cache("all_foos"))
+        self.assertIn(foo1, get_cache("all_foos", relevance_invalidation=True))
         foo2 = Foo.objects.create(**kwargs)
         self.assertIn(foo2, get_cache("all_foos"))
         cache.clear()

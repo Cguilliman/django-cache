@@ -11,6 +11,7 @@ _CREATION_FIELDS = (
     "key_gen", "tick_amount", "tick", "cached_entity",
     "delay_invalidation", "relevance_invalidation",
     "relevance_expires", "delay_countdown", "delay_logging",
+    "is_concurrent"
 )
 
 
@@ -39,6 +40,7 @@ class WorkersCollection:
         relevance_expires: int = default.DEFAULT_RELEVANCE_EXPIRES,
         delay_countdown: int = default.DEFAULT_DELAY_COUNTDOWN,
         delay_logging: bool = default.DEFAULT_DELAY_LOGGING,
+        is_concurrent: bool = default.IS_CONCURRENT,
     ):
         structure_getter = (
             import_string(structure_getter)
@@ -63,6 +65,7 @@ class WorkersCollection:
             relevance_expires=relevance_expires,
             delay_countdown=delay_countdown,
             delay_logging=delay_logging,
+            is_concurrent=is_concurrent,
             # To get around circle import exception
             is_register=False
         )

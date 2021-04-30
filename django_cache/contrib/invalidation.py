@@ -25,7 +25,7 @@ def invalidate_created_caches(
     is_delete: bool = True
 ):
     args, kwargs = get_attributes_from_object(cache_object)
-    cache_worker.base_save(*args, **kwargs)
+    cache_worker.save(*args, **kwargs)
     if is_delete:
         cache_object.delete()
 

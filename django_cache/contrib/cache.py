@@ -1,6 +1,7 @@
-from typing import Callable, Union, Any, Generator
+from typing import Callable, Union, Any, Generator, NamedTuple
 import time
 from datetime import datetime, timedelta
+from dataclasses import dataclass
 
 from django.core.cache import cache
 
@@ -10,6 +11,25 @@ from . import settings as default
 
 def get_precache_key(key):
     return f"{key}||PRECACHE"
+
+
+class LocalSettingsBundle(NamedTuple):
+    expires: int
+    tick_amount: int
+    tick: int
+    is_concurrent: bool
+    delay_logging: bool
+    relevance_invalidation: bool
+    relevance_expires: int
+    delay_invalidation: bool
+    delay_countdown: int
+
+
+def get_local_settings(attributes, worker: "CacheWorker"):
+    return LocalSettingsBundle(**{
+        field: attributes.pop(field, getattr(worker, field, None))
+        for field in LocalSettingsBundle._fields
+    })
 
 
 class CacheWorker:
@@ -28,6 +48,7 @@ class CacheWorker:
         relevance_expires: int = default.DEFAULT_RELEVANCE_EXPIRES,
         delay_countdown: int = default.DEFAULT_DELAY_COUNTDOWN,
         delay_logging: bool = default.DEFAULT_DELAY_LOGGING,
+        is_concurrent: bool = default.IS_CONCURRENT,
         is_register: bool = True
     ):
         # General
@@ -46,6 +67,7 @@ class CacheWorker:
         self.relevance_expires = relevance_expires
         self.delay_invalidation = delay_invalidation
         self.delay_countdown = delay_countdown
+        self.is_concurrent = is_concurrent
         if is_register:
             self.__register()
 
@@ -57,59 +79,65 @@ class CacheWorker:
         return f"{self.label}@{self.key_gen(*args, **kwargs)}"
 
     def save(self, *args, **kwargs):
+        local_settings: LocalSettingsBundle = kwargs.pop(
+            "local_settings", get_local_settings(kwargs, self)
+        )
         key = self.get_key(*args, **kwargs)
         # Save precache
         cache.set(get_precache_key(key), True, 10)
-        return self.base_save(key_=key, *args, **kwargs)
+        return self.__save(local_settings=local_settings, key_=key, *args, **kwargs)
 
-    def base_save(self, key_=None, *args, **kwargs):
+    def __save(self, local_settings: LocalSettingsBundle, key_: str = None, *args, **kwargs):
         if not key_:
             key_ = self.get_key(*args, **kwargs)
+        now = datetime.now()
         entity = CachedEntity(
             value=self.structure_getter(*args, **kwargs),
             key=key_,
             label=self.label,
-            expires=self.expires,
-            is_relevance_invalidation=self.relevance_invalidation,
-            created_at=datetime.now(),
-            available_to=datetime.now() + timedelta(seconds=self.expires),
-            relevance_to=datetime.now() + timedelta(seconds=self.relevance_expires)
+            expires=local_settings.expires,
+            is_relevance_invalidation=local_settings.relevance_invalidation,
+            created_at=now,
+            available_to=now + timedelta(seconds=local_settings.expires),
+            relevance_to=now + timedelta(seconds=local_settings.relevance_expires)
         )
         cache_value(
             cache_entity=entity,
-            is_delay=self.delay_logging,
+            is_delay=local_settings.delay_logging,
             *args, **kwargs
         )
         return entity if self.cached_entity else entity.value
 
-    def _get(self, key):
+    def __get(self, key, local_settings):
         value_data = cache.get(key)
         if not value_data:
             return
         entity = CachedEntity(**value_data)
         # Check by relevance and do invalidation if need it
-        if self.relevance_invalidation and entity.relevance_to <= datetime.now():
+        if local_settings.relevance_invalidation and entity.relevance_to <= datetime.now():
             from ..tasks import lazy_invalidation_task
-            if not self.delay_invalidation:
+            if not local_settings.delay_invalidation:
                 return lazy_invalidation_task(key)
             # Will run invalidation in delay, and return old cached value
             lazy_invalidation_task.delay(key)
 
         return entity if self.cached_entity else entity.value
 
-    def cache_ticks_getter(self, key) -> Generator:
+    def cache_ticks_getter(self, key, local_settings: LocalSettingsBundle) -> Generator:
         # Try to get cache
-        yield self._get(key)
+        yield self.__get(key, local_settings)
         # Get precached marker
-        is_precached = cache.get(get_precache_key(key))
-        if not is_precached:
-            return
-        for _ in range(self.tick_amount):
-            time.sleep(self.tick)
-            yield self._get(key)
+        if local_settings.is_concurrent:
+            is_precached = cache.get(get_precache_key(key))
+            if not is_precached:
+                return
+            for _ in range(local_settings.tick_amount):
+                time.sleep(local_settings.tick)
+                yield self.__get(key, local_settings)
 
     def get(self, *args, **kwargs):
-        for cached_data in self.cache_ticks_getter(self.get_key(*args, **kwargs)):
+        local_settings: LocalSettingsBundle = get_local_settings(kwargs, self)
+        for cached_data in self.cache_ticks_getter(self.get_key(*args, **kwargs), local_settings):
             if cached_data:
                 return cached_data
         return self.save(*args, **kwargs)
