@@ -26,8 +26,6 @@ fast_foo_cache = CacheWorker(
     structure_getter=get_foo,
     label="fast_foo_cache",
     expires=10,
-    relevance_expires=1,
-    relevance_invalidation=True
 )
 fast_foo_timeout_cache = CacheWorker(
     structure_getter=get_foo,

@@ -78,18 +78,17 @@ class CacheWorker:
     def get_key(self, *args, **kwargs):
         return f"{self.label}@{self.key_gen(*args, **kwargs)}"
 
-    def save(self, *args, **kwargs):
-        local_settings: LocalSettingsBundle = kwargs.pop(
-            "local_settings", get_local_settings(kwargs, self)
-        )
+    def save(self, local_settings: LocalSettingsBundle = None, *args, **kwargs):
+        if not local_settings:
+            local_settings: LocalSettingsBundle = kwargs.pop(
+                "local_settings", get_local_settings(kwargs, self)
+            )
         key = self.get_key(*args, **kwargs)
         # Save precache
         cache.set(get_precache_key(key), True, 10)
         return self.__save(local_settings=local_settings, key_=key, *args, **kwargs)
 
-    def __save(self, local_settings: LocalSettingsBundle, key_: str = None, *args, **kwargs):
-        if not key_:
-            key_ = self.get_key(*args, **kwargs)
+    def __save(self, local_settings: LocalSettingsBundle, key_: str, *args, **kwargs):
         now = datetime.now()
         entity = CachedEntity(
             value=self.structure_getter(*args, **kwargs),
@@ -108,7 +107,7 @@ class CacheWorker:
         )
         return entity if self.cached_entity else entity.value
 
-    def __get(self, key, local_settings):
+    def __get(self, key: str, local_settings):
         value_data = cache.get(key)
         if not value_data:
             return
@@ -123,7 +122,7 @@ class CacheWorker:
 
         return entity if self.cached_entity else entity.value
 
-    def cache_ticks_getter(self, key, local_settings: LocalSettingsBundle) -> Generator:
+    def cache_ticks_getter(self, key: str, local_settings: LocalSettingsBundle) -> Generator:
         # Try to get cache
         yield self.__get(key, local_settings)
         # Get precached marker
@@ -140,7 +139,7 @@ class CacheWorker:
         for cached_data in self.cache_ticks_getter(self.get_key(*args, **kwargs), local_settings):
             if cached_data:
                 return cached_data
-        return self.save(*args, **kwargs)
+        return self.save(local_settings=local_settings, *args, **kwargs)
 
     def clear_all(self):
         cache.delete_pattern(f"{self.label}*")

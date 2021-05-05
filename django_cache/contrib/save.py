@@ -6,7 +6,6 @@ from django.core.cache import cache
 from django_cache.models import CreatedCache
 
 
-# @dataclass
 class CachedEntity(NamedTuple):
     label: str
     key: str
