@@ -1,6 +1,6 @@
 from celery import shared_task
 
-from .contrib.invalidation import INVALIDATION_PROCESSES, lazy_invalidation, invalidate_by_relevance_timeout
+from .contrib.invalidation import INVALIDATION_PROCESSES, lazy_invalidation, invalidate_by_relevance_expires
 from .contrib.registration import workers_collection
 
 
@@ -23,4 +23,4 @@ def lazy_invalidation_task(key):
 
 @shared_task(default_retry_delay=1, max_retries=1)
 def relevance_invalidation_task():
-    invalidate_by_relevance_timeout()
+    invalidate_by_relevance_expires()

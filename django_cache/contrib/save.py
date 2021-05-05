@@ -6,11 +6,10 @@ from django.core.cache import cache
 from django_cache.models import CreatedCache
 
 
-# @dataclass
 class CachedEntity(NamedTuple):
     label: str
     key: str
-    timeout: int
+    expires: int
     is_relevance_invalidation: bool
     created_at: datetime
     relevance_to: datetime
@@ -20,7 +19,7 @@ class CachedEntity(NamedTuple):
     def to_cache(self):
         return {
             "value": self.value,
-            "timeout": self.timeout,
+            "expires": self.expires,
             "created_at": self.created_at,
             **self.get_info()
         }
@@ -68,7 +67,7 @@ def log_cache_value(label, key, is_relevance_invalidation, available_to, relevan
 
 
 def cache_value(cache_entity: CachedEntity, is_delay=False, *args, **kwargs):
-    cache.set(cache_entity.key, cache_entity.to_cache(), cache_entity.timeout)
+    cache.set(cache_entity.key, cache_entity.to_cache(), cache_entity.expires)
     kwargs.update(cache_entity.get_info())
     if is_delay:
         from ..tasks import create_cache_log_task
