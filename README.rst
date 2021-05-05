@@ -1,6 +1,10 @@
 Django-cache
 ============
 
+.. image:: https://api.codacy.com/project/badge/Grade/036a983405f046228842d88b36a2cbc9
+   :alt: Codacy Badge
+   :target: https://app.codacy.com/gh/Cguilliman/django-cache?utm_source=github.com&utm_medium=referral&utm_content=Cguilliman/django-cache&utm_campaign=Badge_Grade_Settings
+
 |PyPI version| |python version| |license| |Code Health| |Coverage| |Project Status| |downloads|
 
 **Django-cache** implement configurable caching mechanics.
