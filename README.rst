@@ -82,6 +82,7 @@ Worker parameters
 * ``relevance_invalidation`` - [Not required][bool] Default False. Enable invalidation by relevance.
 * ``relevance_expires`` - [Not required][int] Default 60. Cache value relevance time in seconds.
 * ``delay_logging`` - [Not required][bool] Default False. Run CreatedCache object creation in delay celery task.
+* ``is_concurrent`` - [Not required][bool] Default True. Enable concurrent cache getting mechanic.
 
 You can change global default value in settings:
 
@@ -94,6 +95,7 @@ You can change global default value in settings:
 * ``DJANGO_CACHE_DEFAULT_RELEVANCE_EXPIRES``
 * ``DJANGO_CACHE_DEFAULT_DELAY_COUNTDOWN``
 * ``DJANGO_CACHE_DEFAULT_DELAY_LOGGING``
+* ``DJANGO_CACHE_IS_CONCURRENT``
 
 Automatic invalidation
 ----------------------
@@ -120,7 +122,7 @@ Configure invalidation:
 
 .. code:: python
 
-    from django_cache.contrib import Cacher, automatic
+    from django_cache.contrib import CacheWorker, automatic
     from django_cache.contrib.automatic import (
         default_outdated_getter, default_newcomers_getter
     )
@@ -133,7 +135,7 @@ Configure invalidation:
         return Foo.objects.all()
 
 
-    all_foos_cache = Cacher(
+    all_foos_cache = CacheWorker(
         label="all_foos",  # Unique cache worker label
         structure_getter=get_all_foo_list,  # Function which generation cache value
         expires=100000,  # Cache live in seconds
@@ -146,7 +148,7 @@ Configure invalidation:
         return Foo.objects.filter(attr1=attr1, attr2=attr2)
 
 
-    filtered_foos = Cacher(
+    filtered_foos = CacheWorker(
         label="filtered_foos",  # Unique cache worker label
         structure_getter=filter_foos,  # Function which generation cache value
         expires=100000,  # Cache live in seconds
@@ -190,7 +192,7 @@ NOTES
 
 * If you are using delay invalidation with celery, be careful with cache backend. Memcache has two different instances in celery and django, so using redis or rabbitmq backends.
 
-* If you initialize cache worker using ``django_cache.contrib.Cacher``, this module must me received by application.
+* If you initialize cache worker using ``django_cache.contrib.CacheWorker``, this module must me received by application.
 
 .. |PyPI version| image:: https://badge.fury.io/py/django-ib-cache.svg
    :target: https://badge.fury.io/py/django-ib-cache

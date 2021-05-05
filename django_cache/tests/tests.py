@@ -10,6 +10,7 @@ from django_cache.shortcuts import (
 from django_cache.contrib.invalidation import invalidate, INVALIDATE, INVALIDATE_ALL
 from django_cache.models import CreatedCache
 from django_cache.tasks import run_invalidate_task, relevance_invalidation_task
+from django_cache.admin import invalidate_action
 
 from example_apps.foo.models import Foo, Bar
 from example_apps.foo.cache import (
@@ -19,11 +20,6 @@ from example_apps.foo.cache import (
 
 
 class GeneralTestCase(TestCase):
-
-    # def setUp(self):
-    #     self.foo1 = Foo.objects.create(attr1=1, attr2="test1", attr3=1.1)
-    #     self.foo2 = Foo.objects.create(attr1=2, attr2="test2", attr3=2.2)
-    #     self.foo3 = Foo.objects.create(attr1=3, attr2="test3")
 
     def _setup_testing_data(self):
         foo1 = Foo.objects.create(attr1=1, attr2="test1", attr3=1.1)
@@ -50,6 +46,22 @@ class GeneralTestCase(TestCase):
             setattr(foo1, key, value)
         foo1.save()
         invalidate(simple_foo, kwargs1, kwargs2)
+        self.assertNotIn(foo1, simple_foo.get(**kwargs1))
+        self.assertIn(foo1, simple_foo.get(**kwargs2))
+        cache.clear()
+
+    def test_invalidation_change_by_admin_action_fields(self):
+        foo1, foo2, foo3 = self._setup_testing_data()
+        kwargs1 = dict(attr1=foo1.attr1, attr2=foo1.attr2, attr3=foo1.attr3)
+        kwargs2 = dict(attr1=foo2.attr1, attr2=foo2.attr2, attr3=foo2.attr3)
+        simple_foo.save(**kwargs1)
+        simple_foo.save(**kwargs2)
+        self.assertIn(foo1, simple_foo.get(**kwargs1))
+        self.assertNotIn(foo1, simple_foo.get(**kwargs2))
+        for key, value in kwargs2.items():
+            setattr(foo1, key, value)
+        foo1.save()
+        invalidate_action(None, None, CreatedCache.objects.all())
         self.assertNotIn(foo1, simple_foo.get(**kwargs1))
         self.assertIn(foo1, simple_foo.get(**kwargs2))
         cache.clear()
@@ -165,10 +177,10 @@ class GeneralTestCase(TestCase):
     def test_lazy_invalidation(self):
         kwargs = dict(attr1=1, attr2="test", attr3=1.1)
         foo1 = Foo.objects.create(**kwargs)
-        self.assertIn(foo1, fast_foo_cache.get(**kwargs))
+        self.assertIn(foo1, fast_foo_timeout_cache.get(**kwargs))
         foo2 = Foo.objects.create(**kwargs)
         time.sleep(2)
-        self.assertIn(foo2, fast_foo_cache.get(**kwargs))
+        self.assertIn(foo2, fast_foo_timeout_cache.get(**kwargs))
         cache.clear()
 
     def test_timeout_invalidation(self):
@@ -209,7 +221,24 @@ class GeneralTestCase(TestCase):
         kwargs = dict(attr1=1, attr2="test", attr3=1.1)
         foo1 = Foo.objects.create(**kwargs)
         # Registered in settings
-        self.assertIn(foo1, get_cache("all_foos"))
+        self.assertIn(foo1, get_cache("all_foos", relevance_invalidation=True))
         foo2 = Foo.objects.create(**kwargs)
         self.assertIn(foo2, get_cache("all_foos"))
+        cache.clear()
+
+    def test_dynamic_timeout_invalidation(self):
+        kwargs = dict(attr1=1, attr2="test", attr3=1.1)
+        foo1 = Foo.objects.create(**kwargs)
+        self.assertIn(foo1, fast_foo_cache.get(**kwargs))
+        foo2 = Foo.objects.create(**kwargs)
+        time.sleep(2)
+        # Will not invalidate by relevance
+        self.assertNotIn(foo2, fast_foo_cache.get(**kwargs))
+        # Set relevance invalidation dynamical
+        fast_foo_cache.save(relevance_expires=1, **kwargs)
+        foo3 = Foo.objects.create(**kwargs)
+        time.sleep(2)
+        # Will invalidate by relevance
+        self.assertIn(foo3, fast_foo_cache.get(relevance_invalidation=True, **kwargs))
+        self.assertIn(foo2, fast_foo_cache.get(relevance_invalidation=True, **kwargs))
         cache.clear()
